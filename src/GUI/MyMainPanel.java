@@ -1,12 +1,20 @@
 package GUI;
 
+import DataHandling.MyConfigManager;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class MyMainPanel extends JPanel {
-    private int minDuration = 10;
+
+    private final int minDuration = 10;
+    private MyConfigManager configManager;
+    private final String durationKey = "WAIT_TIME_BEFORE_REFRESH";
+
+
     public MyMainPanel(JFrame mainFrame){
         super(new SpringLayout());
+        configManager = new MyConfigManager();
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         instantiate(mainFrame);
     }
@@ -36,13 +44,16 @@ public class MyMainPanel extends JPanel {
         JPanel frequencyPanel = new JPanel(new SpringLayout());
         frequencyPanel.setLayout(new BoxLayout(frequencyPanel,BoxLayout.Y_AXIS));
         JLabel changeFrequencyLabel = new JLabel("Change Frequency");
-        JLabel freqyencyConfirmLabel = new JLabel("");
+        int oldSliderPosition = getSliderPositionFromSave();
+        JLabel frequencyConfirmLabel = new JLabel(durationToText(getDuration(oldSliderPosition)));
         JSlider slider = new JSlider(0,1000);
-        slider.setValue(getDurationFromSave());
+        slider.setValue(oldSliderPosition);
         slider.addChangeListener(changeEvent -> {
             try {
                 int value = slider.getValue();
-                freqyencyConfirmLabel.setText(durationToText(getDuration(value)));
+                long duration = getDuration(value);
+                frequencyConfirmLabel.setText(durationToText(duration));
+                configManager.storeProperty(durationKey,value);
                 //SwingUtilities.updateComponentTreeUI(mainFrame);
             }
             catch (Exception exception){
@@ -51,15 +62,15 @@ public class MyMainPanel extends JPanel {
         });
         frequencyPanel.add(changeFrequencyLabel);
         frequencyPanel.add(slider);
-        frequencyPanel.add(freqyencyConfirmLabel);
+        frequencyPanel.add(frequencyConfirmLabel);
         return frequencyPanel;
     }
 
     private String getURL(){
         return new String("https://www.geeksforgeeks.org/java-swing-jslider/");
     }
-    private int getDurationFromSave(){
-        return 0;
+    private int getSliderPositionFromSave(){
+        return configManager.getPropertyInt(durationKey);
     }
     private long getDuration(int sliderValue){
         //f(x) = exp(0.008188689*x)
