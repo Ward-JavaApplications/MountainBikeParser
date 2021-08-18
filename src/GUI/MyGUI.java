@@ -4,10 +4,11 @@ import javax.swing.*;
 
 public class MyGUI {
 
+    private JFrame mainFrame;
 
     public MyGUI(){
-        JFrame mainFrame = buildFrame();
-        instantiate(mainFrame);
+        mainFrame = buildFrame();
+        instantiate();
     }
     private JFrame buildFrame(){
         JFrame frame = new JFrame("Mountain Bike Parser");
@@ -17,9 +18,15 @@ public class MyGUI {
         frame.setVisible(true);
         return frame;
     }
-    private void instantiate(JFrame mainFrame){
-        mainFrame.setContentPane(new MyMainPanel(mainFrame));
+    public void instantiate(){
+        mainFrame.setContentPane(new MyMainPanel(mainFrame,this));
         SwingUtilities.updateComponentTreeUI(mainFrame);
     }
+    public void refresh(){
+        SwingUtilities.updateComponentTreeUI(mainFrame);
+    }
+
+
+
 
 }

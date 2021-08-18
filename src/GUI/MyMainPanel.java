@@ -1,6 +1,7 @@
 package GUI;
 
 import DataHandling.MyConfigManager;
+import HTML.HTMLParser;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,10 +14,13 @@ public class MyMainPanel extends JPanel {
     private MyConfigManager configManager;
     private final String waitTimeBeforeRefreshKey = "WAIT_TIME_BEFORE_REFRESH";
     private final String urlKey = "URL";
+    private MyGUI parent;
+    private HTMLParser htmlParser;
 
 
-    public MyMainPanel(JFrame mainFrame){
+    public MyMainPanel(JFrame mainFrame,MyGUI parent){
         super(new SpringLayout());
+        this.parent = parent;
         configManager = new MyConfigManager();
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         instantiate(mainFrame);
@@ -25,6 +29,33 @@ public class MyMainPanel extends JPanel {
 
         add(getURLPanel(mainFrame));
         add(getFrequencyPanel(mainFrame));
+        add(getParsingPanel());
+    }
+
+    private void reloadPanel(){
+        parent.instantiate();
+    }
+
+    private JPanel getParsingPanel(){
+        JPanel parsingPanel = new JPanel(new FlowLayout());
+        JButton startParsingButton = new JButton("Start program");
+        JLabel parserFeedBackLabel = new JLabel("Program isn't running");
+        startParsingButton.addActionListener(action-> {
+            htmlParser = new HTMLParser(parserFeedBackLabel);
+            new Thread(htmlParser).start();
+            parsingPanel.removeAll();
+            JButton stopParsingButton = new JButton("Stop program");
+            stopParsingButton.addActionListener(action2 -> {
+                htmlParser.stopParsing();
+                reloadPanel();
+            });
+            parsingPanel.add(stopParsingButton);
+            parsingPanel.add(parserFeedBackLabel);
+            parent.refresh();
+        });
+        parsingPanel.add(startParsingButton);
+        parsingPanel.add(parserFeedBackLabel);
+        return parsingPanel;
     }
 
     private JPanel getURLPanel(JFrame mainFrame){
@@ -95,8 +126,9 @@ public class MyMainPanel extends JPanel {
         //f(x) = exp(0.008188689*x)
         double a = 0.008188689D;
         double duration = Math.exp(a*sliderValue);
-        return Math.round(duration) + minDuration;
+        return Math.round(duration) + 10;
     }
+
     private String durationToText(long duration){
         //receives the duration in seconds
         String frequencyConfrimText = "The website will be checked every ";
