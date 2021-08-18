@@ -4,12 +4,15 @@ import DataHandling.MyConfigManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class MyMainPanel extends JPanel {
 
     private final int minDuration = 10;
     private MyConfigManager configManager;
-    private final String durationKey = "WAIT_TIME_BEFORE_REFRESH";
+    private final String waitTimeBeforeRefreshKey = "WAIT_TIME_BEFORE_REFRESH";
+    private final String urlKey = "URL";
 
 
     public MyMainPanel(JFrame mainFrame){
@@ -29,7 +32,23 @@ public class MyMainPanel extends JPanel {
         JLabel urlLabelText = new JLabel("Currently checking the following url:");
         JLabel urlLabelURL = new JLabel(url);
         urlLabelURL.setForeground(Color.GRAY);
-        JButton changeURL = new JButton("Change url");
+        JButton changeURL;
+        String urlMessage;
+        if(url == null){
+            //no url was given yet
+            changeURL = new JButton("Add url");
+            urlMessage = "Type the url you would like to check in the box below";
+        }
+        else{
+            changeURL = new JButton("Change url");
+            urlMessage = "Type the new url in the box below";
+        }
+        changeURL.addActionListener(action -> {
+            changeURL.setText("Change url");
+            String answer = JOptionPane.showInputDialog(urlMessage,"");
+            urlLabelURL.setText(answer);
+            configManager.storeProperty(urlKey,answer);
+                });
         JPanel urlPanel = new JPanel(new SpringLayout());
         urlPanel.setLayout(new BoxLayout(urlPanel,BoxLayout.Y_AXIS));
         urlPanel.add(urlLabelText);
@@ -53,7 +72,7 @@ public class MyMainPanel extends JPanel {
                 int value = slider.getValue();
                 long duration = getDuration(value);
                 frequencyConfirmLabel.setText(durationToText(duration));
-                configManager.storeProperty(durationKey,value);
+                configManager.storeProperty(waitTimeBeforeRefreshKey,value);
                 //SwingUtilities.updateComponentTreeUI(mainFrame);
             }
             catch (Exception exception){
@@ -67,10 +86,10 @@ public class MyMainPanel extends JPanel {
     }
 
     private String getURL(){
-        return new String("https://www.geeksforgeeks.org/java-swing-jslider/");
+        return configManager.getPropertyString(urlKey);
     }
     private int getSliderPositionFromSave(){
-        return configManager.getPropertyInt(durationKey);
+        return configManager.getPropertyInt(waitTimeBeforeRefreshKey);
     }
     private long getDuration(int sliderValue){
         //f(x) = exp(0.008188689*x)
