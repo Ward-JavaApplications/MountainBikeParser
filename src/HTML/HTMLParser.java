@@ -2,6 +2,7 @@ package HTML;
 
 import DataHandling.MyConfigManager;
 import GUI.MyMainPanel;
+import GUI.Notification;
 import org.imgscalr.Scalr;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -67,7 +68,7 @@ public class HTMLParser implements Runnable{
         }
         catch (Exception e){
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null,"Something went wrong after loading the website for multiple times");
+            JOptionPane.showMessageDialog(null,"Something went wrong after loading the website");
             System.exit(0);
             return null;
         }
@@ -84,16 +85,22 @@ public class HTMLParser implements Runnable{
         }
     }
 
-    private void checkIfChanged(){
+    private void checkIfChanged(JLabel feedBackLabel,String nameBike){
         DocumentAndBikesContainer documentAndBikesContainer = loadPage();
         ArrayList<Bike> types = documentAndBikesContainer.getBikes();
         String oldType = MyConfigManager.getPropertyString(MyConfigManager.typeKey);
         String availability = getAvailabilityFromList(types,oldType);
+        feedBackLabel.setText("Currently " + availability);
         String oldAvailability = MyConfigManager.getPropertyString(MyConfigManager.availabilityKey);
         if(!oldAvailability.equals(availability) && availability.contains("stock")){
-            //TODO: push notification
-            System.out.println("Changed");
+            new Notification(nameBike);
         }
+    }
+    private boolean arrayListContains(ArrayList<Bike> bikes,String type){
+        for (Bike bike : bikes) {
+            if(bike.getType().equals(type))return true;
+        }
+        return false;
     }
 
 
@@ -104,7 +111,7 @@ public class HTMLParser implements Runnable{
             ArrayList<Bike> types = documentAndBikesContainer.getBikes();
             Document document = documentAndBikesContainer.getDocument();
             String oldType = MyConfigManager.getPropertyString(MyConfigManager.typeKey);
-            if (oldType == null || !types.contains(oldType)) {
+            if (oldType == null || !arrayListContains(types,oldType)) {
                 //first time
                 String[] options = types.stream().map(Bike::getType).toArray(String[]::new);
                 int choice = JOptionPane.showOptionDialog(null, "Which of these bikes is the one you would like to follow?", "Select the correct bike", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
@@ -127,12 +134,14 @@ public class HTMLParser implements Runnable{
             BufferedImage imageImage = ImageIO.read(new URL(image));
             panel.add(new JLabel(new ImageIcon(Scalr.resize(imageImage, Scalr.Mode.FIT_TO_HEIGHT,260))));
             panel.add(new JLabel(price));
+            JLabel feedbackLabel = new JLabel("currently " + getAvailabilityFromList(types,oldType));
+            panel.add(feedbackLabel);
             mainFrame.add(panel);
             SwingUtilities.updateComponentTreeUI(mainFrame);
             Thread.sleep(interval * 1000);
             while(parsing){
                 try{
-                    checkIfChanged();
+                    checkIfChanged(feedbackLabel,model + " " + oldType);
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -159,6 +168,9 @@ public class HTMLParser implements Runnable{
         catch (StringIndexOutOfBoundsException stringIndexOutOfBoundsException){
             return type;
         }
+    }
+    public boolean isParsing(){
+        return parsing;
     }
     private class Bike{
         private String type;

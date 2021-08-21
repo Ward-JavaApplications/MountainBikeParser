@@ -17,6 +17,8 @@ public class MyMainPanel extends JPanel {
     private int sliderValue;
     private String urlValue;
 
+    private boolean sliderNotificationGiven = false;
+
 
     public MyMainPanel(JFrame mainFrame,MyGUI parent){
         super(new SpringLayout());
@@ -41,7 +43,7 @@ public class MyMainPanel extends JPanel {
         JPanel parsingPanel = new JPanel(new FlowLayout());
         JButton startParsingButton = new JButton("Start program");
         JPanel parserFeedBackPanel = new JPanel(new FlowLayout());
-        JLabel parserFeedBackLabel = new JLabel("Program isn't running");
+        JLabel parserFeedBackLabel = new JLabel();
         startParsingButton.addActionListener(action-> {
             MyConfigManager.storeProperty(MyConfigManager.urlKey,urlValue);
             MyConfigManager.storeProperty(MyConfigManager.waitTimeBeforeRefreshKey,sliderValue);
@@ -50,6 +52,7 @@ public class MyMainPanel extends JPanel {
             parsingPanel.removeAll();
             JButton stopParsingButton = new JButton("Stop program");
             stopParsingButton.addActionListener(action2 -> {
+                sliderNotificationGiven = false;
                 htmlParser.stopParsing();
                 reloadPanel();
             });
@@ -104,7 +107,13 @@ public class MyMainPanel extends JPanel {
         slider.setValue(oldSliderPosition);
         slider.addChangeListener(changeEvent -> {
             try {
-                changeFrequency(frequencyConfirmLabel, slider);
+                if(htmlParser != null && htmlParser.isParsing()){
+                    if(!sliderNotificationGiven){
+                        JOptionPane.showMessageDialog(null,"Stop the program first");
+                        sliderNotificationGiven = true;
+                    }
+                }
+                else changeFrequency(frequencyConfirmLabel, slider);
             }
             catch (Exception exception){
                 exception.printStackTrace();
@@ -116,18 +125,34 @@ public class MyMainPanel extends JPanel {
         return frequencyPanel;
     }
 
-    private void changeFrequency(JLabel frequencyConfirmLabel, JSlider slider) {
-        int value = slider.getValue();
-        long duration = getDuration(value);
-        frequencyConfirmLabel.setText(durationToText(duration));
-        sliderValue = value;
+    private boolean changeFrequency(JLabel frequencyConfirmLabel, JSlider slider) {
+        if(htmlParser != null && htmlParser.isParsing()){
+            JOptionPane.showMessageDialog(null,"Stop the program first");
+            return false;
+        }
+        else {
+            int value = slider.getValue();
+            long duration = getDuration(value);
+            frequencyConfirmLabel.setText(durationToText(duration));
+            sliderValue = value;
+            return true;
+        }
     }
 
-    private void changeURL(JLabel urlLabelURL, JButton changeURL, String urlMessage) {
-        changeURL.setText("Change url");
-        String answer = JOptionPane.showInputDialog(urlMessage,"");
-        urlLabelURL.setText(answer);
-        urlValue = answer;
+    private boolean changeURL(JLabel urlLabelURL, JButton changeURL, String urlMessage) {
+        if(htmlParser != null && htmlParser.isParsing()){
+            JOptionPane.showMessageDialog(null,"Stop the program first");
+            return false;
+        }
+        else {
+            MyConfigManager.storeProperty(MyConfigManager.availabilityKey, null);
+            MyConfigManager.storeProperty(MyConfigManager.typeKey, null);
+            changeURL.setText("Change url");
+            String answer = JOptionPane.showInputDialog(urlMessage, "");
+            urlLabelURL.setText(answer);
+            urlValue = answer;
+            return true;
+        }
     }
 
     private String getURL(){
@@ -153,5 +178,10 @@ public class MyMainPanel extends JPanel {
             return frequencyConfrimText + duration/60 + " minutes";
         }
         else return frequencyConfrimText + duration/(60*60) + " hours";
+    }
+    private void stopHTMLParserIfExists(){
+        if(htmlParser != null){
+            htmlParser.stopParsing();
+        }
     }
 }

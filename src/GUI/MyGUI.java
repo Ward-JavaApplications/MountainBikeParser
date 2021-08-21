@@ -12,7 +12,7 @@ public class MyGUI {
     }
     private JFrame buildFrame(){
         JFrame frame = new JFrame("Mountain Bike Parser");
-        frame.setSize(500,500);
+        frame.setSize(500,530);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
