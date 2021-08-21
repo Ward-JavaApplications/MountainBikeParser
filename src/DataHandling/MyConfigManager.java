@@ -66,16 +66,18 @@ public class MyConfigManager {
     public static String getPropertyString(String key){
         return cache.get(key);
     }
-    public static void saveCacheToConfig(){
-        try{
-            OutputStream outputStream = new FileOutputStream(configFilePath);
-            Properties properties = new Properties();
-            for(Map.Entry<String,String> entry: cache.entrySet()){
-                properties.setProperty(entry.getKey(), entry.getValue());
+    public static void saveCacheToConfig() {
+        if (cache != null && !cache.isEmpty()) {
+            try {
+                OutputStream outputStream = new FileOutputStream(configFilePath);
+                Properties properties = new Properties();
+                for (Map.Entry<String, String> entry : cache.entrySet()) {
+                    properties.setProperty(entry.getKey(), entry.getValue());
+                }
+                properties.store(outputStream, null);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            properties.store(outputStream,null);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }
