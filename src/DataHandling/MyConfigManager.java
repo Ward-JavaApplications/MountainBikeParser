@@ -6,17 +6,19 @@ import java.util.Map;
 import java.util.Properties;
 
 public class MyConfigManager {
-    Properties properties = new Properties();
-    String configFilePath = "src/config.properties";
-    private Map<String,String> cache = new HashMap<>();
+    private final static String configFilePath = "src/config.properties";
+    private static final Map<String,String> cache = new HashMap<>();
+
+    public static final String waitTimeBeforeRefreshKey = "WAIT_TIME_BEFORE_REFRESH";
+    public static final String urlKey = "URL";
 
     public MyConfigManager(){
-        properties = new Properties();
         populateCacheFromProperties();
     }
 
-    private void populateCacheFromProperties(){
+    private static void populateCacheFromProperties(){
         try {
+            Properties properties = new Properties();
             InputStream inputStream = new FileInputStream(configFilePath);
             properties.load(inputStream);
             for (Map.Entry<Object, Object> objectObjectEntry : properties.entrySet()) {
@@ -28,82 +30,50 @@ public class MyConfigManager {
         }
     }
 
-    public void storeProperty(String key,String value){
-        try {
-            OutputStream outputStream = new FileOutputStream(configFilePath);
-            properties.setProperty(key, String.valueOf(value));
-            properties.store(outputStream,null);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static void storeProperty(String key,String value){
+        if(cache.containsKey(key)){
+            cache.replace(key,value);
+        }
+        else{
+            cache.put(key,value);
         }
     }
 
-    public void storeProperty(String key,long value){
-        try {
-            OutputStream outputStream = new FileOutputStream(configFilePath);
-            properties.setProperty(key, String.valueOf(value));
-            properties.store(outputStream,null);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static void storeProperty(String key,long value){
+        storeProperty(key,String.valueOf(value));
     }
-    public void storeProperty(String key,int value){
-        try {
-            OutputStream outputStream = new FileOutputStream(configFilePath);
-            properties.setProperty(key, String.valueOf(value));
-            properties.store(outputStream,null);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static void storeProperty(String key,int value){
+        storeProperty(key,String.valueOf(value));
     }
-    public long getPropertyLong(String key){
-        try{
-            String valueString = getFromProperties(key);
-            return Long.parseLong(valueString);
+    public static long getPropertyLong(String key){
+        try {
+            return Long.parseLong(getPropertyString(key));
         }
         catch (Exception e){
-            e.printStackTrace();
             return 0;
         }
     }
-    public int getPropertyInt(String key){
-        try{
-            String valueString = getFromProperties(key);
-            return Integer.parseInt(valueString);
+    public static int getPropertyInt(String key){
+        try {
+            return Integer.parseInt(getPropertyString(key));
         }
         catch (Exception e){
-            e.printStackTrace();
             return 0;
         }
     }
-    public String getPropertyString(String key){
-        try{
-            return getFromProperties(key);
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
+    public static String getPropertyString(String key){
+        return cache.get(key);
     }
-    private String getFromProperties(String key){
-        if(cache.containsKey(key)) return cache.get(key);
-        else {
-            try {
-                InputStream inputStream = new FileInputStream(configFilePath);
-                properties.load(inputStream);
-                String valueString = properties.getProperty(key);
-                return valueString;
+    public static void saveCacheToConfig(){
+        try{
+            OutputStream outputStream = new FileOutputStream(configFilePath);
+            Properties properties = new Properties();
+            for(Map.Entry<String,String> entry: cache.entrySet()){
+                properties.setProperty(entry.getKey(), entry.getValue());
             }
-            catch (Exception e){
-                e.printStackTrace();
-                return null;
-            }
+            properties.store(outputStream,null);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

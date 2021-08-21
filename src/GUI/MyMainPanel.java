@@ -11,19 +11,20 @@ import java.awt.event.ActionListener;
 public class MyMainPanel extends JPanel {
 
     private final int minDuration = 10;
-    private MyConfigManager configManager;
-    private final String waitTimeBeforeRefreshKey = "WAIT_TIME_BEFORE_REFRESH";
-    private final String urlKey = "URL";
     private MyGUI parent;
     private HTMLParser htmlParser;
+
+    private int sliderValue;
+    private String urlValue;
 
 
     public MyMainPanel(JFrame mainFrame,MyGUI parent){
         super(new SpringLayout());
         this.parent = parent;
-        configManager = new MyConfigManager();
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         instantiate(mainFrame);
+        sliderValue = getSliderPositionFromSave();
+        urlValue = getURL();
     }
     private void instantiate(JFrame mainFrame){
 
@@ -41,6 +42,8 @@ public class MyMainPanel extends JPanel {
         JButton startParsingButton = new JButton("Start program");
         JLabel parserFeedBackLabel = new JLabel("Program isn't running");
         startParsingButton.addActionListener(action-> {
+            MyConfigManager.storeProperty(MyConfigManager.urlKey,urlValue);
+            MyConfigManager.storeProperty(MyConfigManager.waitTimeBeforeRefreshKey,sliderValue);
             htmlParser = new HTMLParser(parserFeedBackLabel);
             new Thread(htmlParser).start();
             parsingPanel.removeAll();
@@ -75,11 +78,8 @@ public class MyMainPanel extends JPanel {
             urlMessage = "Type the new url in the box below";
         }
         changeURL.addActionListener(action -> {
-            changeURL.setText("Change url");
-            String answer = JOptionPane.showInputDialog(urlMessage,"");
-            urlLabelURL.setText(answer);
-            configManager.storeProperty(urlKey,answer);
-                });
+            changeURL(urlLabelURL, changeURL, urlMessage);
+        });
         JPanel urlPanel = new JPanel(new SpringLayout());
         urlPanel.setLayout(new BoxLayout(urlPanel,BoxLayout.Y_AXIS));
         urlPanel.add(urlLabelText);
@@ -89,6 +89,8 @@ public class MyMainPanel extends JPanel {
         urlPanel.add(buttonPanel);
         return urlPanel;
     }
+
+
 
     private JPanel getFrequencyPanel(JFrame mainFrame){
         JPanel frequencyPanel = new JPanel(new SpringLayout());
@@ -100,11 +102,7 @@ public class MyMainPanel extends JPanel {
         slider.setValue(oldSliderPosition);
         slider.addChangeListener(changeEvent -> {
             try {
-                int value = slider.getValue();
-                long duration = getDuration(value);
-                frequencyConfirmLabel.setText(durationToText(duration));
-                configManager.storeProperty(waitTimeBeforeRefreshKey,value);
-                //SwingUtilities.updateComponentTreeUI(mainFrame);
+                changeFrequency(frequencyConfirmLabel, slider);
             }
             catch (Exception exception){
                 exception.printStackTrace();
@@ -116,13 +114,27 @@ public class MyMainPanel extends JPanel {
         return frequencyPanel;
     }
 
+    private void changeFrequency(JLabel frequencyConfirmLabel, JSlider slider) {
+        int value = slider.getValue();
+        long duration = getDuration(value);
+        frequencyConfirmLabel.setText(durationToText(duration));
+        sliderValue = value;
+    }
+
+    private void changeURL(JLabel urlLabelURL, JButton changeURL, String urlMessage) {
+        changeURL.setText("Change url");
+        String answer = JOptionPane.showInputDialog(urlMessage,"");
+        urlLabelURL.setText(answer);
+        urlValue = answer;
+    }
+
     private String getURL(){
-        return configManager.getPropertyString(urlKey);
+        return MyConfigManager.getPropertyString(MyConfigManager.urlKey);
     }
     private int getSliderPositionFromSave(){
-        return configManager.getPropertyInt(waitTimeBeforeRefreshKey);
+        return MyConfigManager.getPropertyInt(MyConfigManager.waitTimeBeforeRefreshKey);
     }
-    private long getDuration(int sliderValue){
+    public static long getDuration(int sliderValue){
         //f(x) = exp(0.008188689*x)
         double a = 0.008188689D;
         double duration = Math.exp(a*sliderValue);

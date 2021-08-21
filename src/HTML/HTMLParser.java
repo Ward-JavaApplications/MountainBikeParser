@@ -1,6 +1,7 @@
 package HTML;
 
 import DataHandling.MyConfigManager;
+import GUI.MyMainPanel;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -15,9 +16,8 @@ public class HTMLParser implements Runnable{
 
     public HTMLParser(JLabel label){
         this.label = label;
-        MyConfigManager configManager = new MyConfigManager();
-        url = configManager.getPropertyString("URL");
-        interval = getDuration(configManager.getPropertyInt("WAIT_TIME_BEFORE_REFRESH"));
+        url = MyConfigManager.getPropertyString(MyConfigManager.urlKey);
+        interval = MyMainPanel.getDuration(MyConfigManager.getPropertyInt(MyConfigManager.waitTimeBeforeRefreshKey));
     }
 
     public void stopParsing(){
@@ -30,11 +30,11 @@ public class HTMLParser implements Runnable{
         while (parsing){
             try {
                 System.out.println("We parse " + url + " and we load every " + interval);
-                Document document = Jsoup.connect(url).get();
-                String tekst = document.select(".artikel-element-order").first().toString();
-                label.setText(tekst);
-                System.out.println(tekst);
-                Thread.sleep(interval * 1000);
+//                Document document = Jsoup.connect(url).get();
+//                String tekst = document.select(".artikel-element-order").first().toString();
+//                label.setText(tekst);
+//                System.out.println(tekst);
+                  Thread.sleep(interval * 1000);
             }
             catch (Exception e){
                 e.printStackTrace();
@@ -43,11 +43,5 @@ public class HTMLParser implements Runnable{
                 System.exit(0);
             }
         }
-    }
-    private long getDuration(int sliderValue){
-        //f(x) = exp(0.008188689*x)
-        double a = 0.008188689D;
-        double duration = Math.exp(a*sliderValue);
-        return Math.round(duration) + 10;
     }
 }

@@ -20,10 +20,12 @@ public class MyGUI {
     }
     public void instantiate(){
         mainFrame.setContentPane(new MyMainPanel(mainFrame,this));
-        SwingUtilities.updateComponentTreeUI(mainFrame);
+        mainFrame.revalidate();
+        //SwingUtilities.updateComponentTreeUI(mainFrame);
     }
     public void refresh(){
-        SwingUtilities.updateComponentTreeUI(mainFrame);
+        //SwingUtilities.updateComponentTreeUI(mainFrame);
+        mainFrame.revalidate();
     }
 
 
