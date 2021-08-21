@@ -30,21 +30,22 @@ public class MyMainPanel extends JPanel {
 
         add(getURLPanel(mainFrame));
         add(getFrequencyPanel(mainFrame));
-        add(getParsingPanel());
+        add(getParsingPanel(mainFrame));
     }
 
     private void reloadPanel(){
         parent.instantiate();
     }
 
-    private JPanel getParsingPanel(){
+    private JPanel getParsingPanel(JFrame mainFrame){
         JPanel parsingPanel = new JPanel(new FlowLayout());
         JButton startParsingButton = new JButton("Start program");
+        JPanel parserFeedBackPanel = new JPanel(new FlowLayout());
         JLabel parserFeedBackLabel = new JLabel("Program isn't running");
         startParsingButton.addActionListener(action-> {
             MyConfigManager.storeProperty(MyConfigManager.urlKey,urlValue);
             MyConfigManager.storeProperty(MyConfigManager.waitTimeBeforeRefreshKey,sliderValue);
-            htmlParser = new HTMLParser(parserFeedBackLabel);
+            htmlParser = new HTMLParser(parserFeedBackPanel,mainFrame);
             new Thread(htmlParser).start();
             parsingPanel.removeAll();
             JButton stopParsingButton = new JButton("Stop program");
@@ -53,7 +54,8 @@ public class MyMainPanel extends JPanel {
                 reloadPanel();
             });
             parsingPanel.add(stopParsingButton);
-            parsingPanel.add(parserFeedBackLabel);
+            parserFeedBackPanel.add(parserFeedBackLabel);
+            parsingPanel.add(parserFeedBackPanel);
             parent.refresh();
         });
         parsingPanel.add(startParsingButton);

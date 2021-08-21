@@ -11,6 +11,8 @@ public class MyConfigManager {
 
     public static final String waitTimeBeforeRefreshKey = "WAIT_TIME_BEFORE_REFRESH";
     public static final String urlKey = "URL";
+    public static final String typeKey = "TYPE";
+    public static final String availabilityKey = "AVAILABILITY";
 
     public MyConfigManager(){
         populateCacheFromProperties();
