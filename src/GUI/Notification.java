@@ -6,7 +6,9 @@ import java.awt.*;
 public class Notification {
     public Notification(String name){
         JFrame mainFrame = new JFrame("The status of " + name + " has changed");
-        mainFrame.setSize(300,200);
+        mainFrame.setAlwaysOnTop(true);
+        mainFrame.setBackground(Color.YELLOW);
+        mainFrame.setSize(700,400);
         mainFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice device = ge.getDefaultScreenDevice();
@@ -18,8 +20,14 @@ public class Notification {
 
         JPanel mainPanel = new JPanel(new SpringLayout());
         mainPanel.setLayout(new BoxLayout(mainPanel,BoxLayout.Y_AXIS));
-        mainPanel.add(new JLabel(name));
-        mainPanel.add(new JLabel("has become available"));
+        JLabel nameLabel = new JLabel(name);
+        nameLabel.setForeground(Color.RED);
+        nameLabel.setFont(nameLabel.getFont().deriveFont(80f));
+        mainPanel.add(nameLabel);
+        JLabel titleLabel = new JLabel("has become available");
+        titleLabel.setForeground(Color.RED);
+        titleLabel.setFont(titleLabel.getFont().deriveFont(60f));
+        mainPanel.add(titleLabel);
         mainFrame.setContentPane(mainPanel);
     }
 }
