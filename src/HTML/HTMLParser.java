@@ -14,9 +14,11 @@ import javax.print.Doc;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class HTMLParser implements Runnable{
     private String url;
@@ -66,6 +68,10 @@ public class HTMLParser implements Runnable{
             }
             return new DocumentAndBikesContainer(document, types);
         }
+        catch (SocketTimeoutException ignored){
+            System.out.println("SockedTimout exception");
+            return null;
+        }
         catch (Exception e){
             e.printStackTrace();
             JOptionPane.showMessageDialog(null,"Something went wrong after loading the website");
@@ -87,13 +93,16 @@ public class HTMLParser implements Runnable{
 
     private void checkIfChanged(JLabel feedBackLabel,String nameBike){
         DocumentAndBikesContainer documentAndBikesContainer = loadPage();
-        ArrayList<Bike> types = documentAndBikesContainer.getBikes();
-        String oldType = MyConfigManager.getPropertyString(MyConfigManager.typeKey);
-        String availability = getAvailabilityFromList(types,oldType);
-        feedBackLabel.setText("Currently " + availability);
-        String oldAvailability = MyConfigManager.getPropertyString(MyConfigManager.availabilityKey);
-        if(!oldAvailability.equals(availability) && availability.contains("stock")){
-            new Notification(nameBike);
+        if(documentAndBikesContainer != null) {
+            ArrayList<Bike> types = documentAndBikesContainer.getBikes();
+            String oldType = MyConfigManager.getPropertyString(MyConfigManager.typeKey);
+            String availability = getAvailabilityFromList(types, oldType);
+            feedBackLabel.setText("Currently " + availability);
+            String oldAvailability = MyConfigManager.getPropertyString(MyConfigManager.availabilityKey);
+            if (!oldAvailability.equals(availability) && availability.contains("stock")) {
+                new Notification(nameBike);
+            }
+            System.out.println("At " + new Date().toString() + " we found that the " + nameBike + " was " + availability);
         }
     }
     private boolean arrayListContains(ArrayList<Bike> bikes,String type){
@@ -108,6 +117,11 @@ public class HTMLParser implements Runnable{
     public void run() {
         try {
             DocumentAndBikesContainer documentAndBikesContainer = loadPage();
+            while(documentAndBikesContainer == null) {
+                documentAndBikesContainer=loadPage();
+                Thread.sleep(3*1000);
+                System.out.println("It couldn't load in the first try, I will go again");
+            }
             ArrayList<Bike> types = documentAndBikesContainer.getBikes();
             Document document = documentAndBikesContainer.getDocument();
             String oldType = MyConfigManager.getPropertyString(MyConfigManager.typeKey);
@@ -142,6 +156,7 @@ public class HTMLParser implements Runnable{
             while(parsing){
                 try{
                     checkIfChanged(feedbackLabel,model + " " + oldType);
+                    Thread.sleep(1000*interval);
                 }
                 catch (Exception e){
                     e.printStackTrace();
