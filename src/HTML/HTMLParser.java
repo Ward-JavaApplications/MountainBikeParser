@@ -26,6 +26,7 @@ public class HTMLParser implements Runnable{
     private JPanel panel;
     private boolean parsing = true;
     private JFrame mainFrame;
+    private Notification notification;
 
     public HTMLParser(JPanel label,JFrame mainFrame){
         this.panel = label;
@@ -100,7 +101,10 @@ public class HTMLParser implements Runnable{
             feedBackLabel.setText("Currently " + availability);
             String oldAvailability = MyConfigManager.getPropertyString(MyConfigManager.availabilityKey);
             if (!oldAvailability.equals(availability) && availability.contains("stock")) {
-                new Notification(nameBike);
+                if(notification != null){
+                    notification.closeNotification();
+                }
+               notification = new Notification(nameBike);
             }
             //System.out.println("At " + new Date().toString() + " we found that the " + nameBike + " was " + availability);
         }

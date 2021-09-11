@@ -4,8 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Notification {
+    private JFrame mainFrame;
     public Notification(String name){
-        JFrame mainFrame = new JFrame("The status of " + name + " has changed");
+        mainFrame = new JFrame("The status of " + name + " has changed");
         mainFrame.setAlwaysOnTop(true);
         mainFrame.setBackground(Color.YELLOW);
         mainFrame.setSize(700,400);
@@ -29,5 +30,8 @@ public class Notification {
         titleLabel.setFont(titleLabel.getFont().deriveFont(60f));
         mainPanel.add(titleLabel);
         mainFrame.setContentPane(mainPanel);
+    }
+    public void closeNotification(){
+        mainFrame.dispose();
     }
 }
