@@ -151,7 +151,7 @@ public class HTMLParser implements Runnable{
             JLabel feedbackLabel = new JLabel("currently " + getAvailabilityFromList(types,oldType));
             panel.add(feedbackLabel);
             mainFrame.add(panel);
-            SwingUtilities.updateComponentTreeUI(mainFrame);
+            mainFrame.revalidate();
             Thread.sleep(interval * 1000);
             while(parsing){
                 try{
