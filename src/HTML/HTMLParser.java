@@ -102,7 +102,7 @@ public class HTMLParser implements Runnable{
             if (!oldAvailability.equals(availability) && availability.contains("stock")) {
                 new Notification(nameBike);
             }
-            System.out.println("At " + new Date().toString() + " we found that the " + nameBike + " was " + availability);
+            //System.out.println("At " + new Date().toString() + " we found that the " + nameBike + " was " + availability);
         }
     }
     private boolean arrayListContains(ArrayList<Bike> bikes,String type){
